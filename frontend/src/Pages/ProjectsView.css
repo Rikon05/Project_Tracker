@@ -1,0 +1,229 @@
+.tasks-container {
+  max-width: 1150px;
+  margin: 0 auto;
+}
+
+.progress-section {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-heading);
+  margin-bottom: 0.5rem;
+}
+
+.progress-bar-bg {
+  height: 8px;
+  background-color: var(--border);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 9999px;
+  transition: width 0.4s ease-out;
+}
+
+.task-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.task-input {
+  flex: 1;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1rem;
+  color: var(--text-heading);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.task-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.task-item:hover {
+  border-color: var(--primary);
+}
+
+.task-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.task-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  color: white;
+}
+
+.task-item.completed .task-checkbox {
+  background-color: var(--success);
+  border-color: var(--success);
+}
+
+.task-text {
+  font-size: 0.95rem;
+  color: var(--text-heading);
+  transition: var(--transition);
+}
+
+.task-item.completed .task-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.task-delete {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-delete:hover {
+  color: var(--error);
+  background-color: var(--error-bg);
+}
+
+/* Roadmap Timeline Styles */
+.roadmap-container {
+  position: relative;
+  margin-top: 1.5rem;
+  padding-left: 40px;
+  padding-bottom: 0.5rem;
+  width: 100%;
+}
+
+.roadmap-line {
+  position: absolute;
+  left: 14px;
+  top: 6px;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--primary);
+  border-radius: 4px;
+}
+
+.roadmap-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.roadmap-item:last-child {
+  padding-bottom: 0;
+}
+
+.roadmap-dot {
+  position: absolute;
+  left: -32px;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--bg-card);
+  border: 4px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roadmap-dot.completed {
+  background-color: var(--success);
+  border-color: var(--success);
+}
+
+.roadmap-dot.in-progress {
+  border-color: var(--warning);
+}
+
+.roadmap-content {
+  font-size: 0.95rem;
+  color: var(--text-heading);
+  font-weight: 500;
+  padding-left: 0.5rem;
+}
+
+.roadmap-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.status-select {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.status-select:focus {
+  border-color: var(--primary);
+}
+
+.roadmap-item.dragging {
+  opacity: 0.5;
+  background-color: var(--bg-hover);
+  border-radius: 8px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
