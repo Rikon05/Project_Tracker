@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import DashboardView from './Pages/DashboardView';
 import ProjectsView from './Pages/ProjectsView';
 import AdminView from './Pages/AdminView';
+import LoginView from './Pages/LoginView';
 
 function App() {
   const [currentTab, setCurrentTab] = useState('dashboard');
@@ -211,25 +212,27 @@ function App() {
     }
   };
 
-  const handleLoginSubmit = (e) => {
-    e.preventDefault();
-    // Basic mock authentication
-    if (loginForm.username && loginForm.password) {
+  const handleLoginSubmit = (email, password) => {
+    // Basic hardcoded admin authentication
+    if (email === 'admin' && password === 'admin123') {
       setIsLoggedIn(true);
       setCurrentTab('dashboard');
-      setLoginForm({ username: '', password: '' });
+    } else {
+      alert('Invalid admin credentials! Please use admin / admin123');
     }
   };
 
   return (
     <div className="app-container">
       {/* Header */}
-      <Header
-        currentTab={currentTab}
-        setCurrentTab={setCurrentTab}
-        isLoggedIn={isLoggedIn}
-        onLoginClick={handleLoginClick}
-      />
+      {currentTab !== 'login' && (
+        <Header
+          currentTab={currentTab}
+          setCurrentTab={setCurrentTab}
+          isLoggedIn={isLoggedIn}
+          onLoginClick={handleLoginClick}
+        />
+      )}
 
       {/* Main Content Area (Body) */}
       <main className="app-body">
@@ -259,45 +262,12 @@ function App() {
           <AdminView serverStatus={serverStatus} />
         )}
         {currentTab === 'login' && (
-          <div className="login-view">
-            <span className="login-icon-large">🔑</span>
-            <h2>Sign In</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              Sign in to manage team and server settings.
-            </p>
-            <form onSubmit={handleLoginSubmit} className="login-form">
-              <div className="form-group">
-                <label>Username</label>
-                <input
-                  type="text"
-                  required
-                  className="form-input"
-                  placeholder="admin"
-                  value={loginForm.username}
-                  onChange={(e) => setLoginForm((p) => ({ ...p, username: e.target.value }))}
-                />
-              </div>
-              <div className="form-group">
-                <label>Password</label>
-                <input
-                  type="password"
-                  required
-                  className="form-input"
-                  placeholder="••••••••"
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm((p) => ({ ...p, password: e.target.value }))}
-                />
-              </div>
-              <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', width: '100%' }}>
-                Log In
-              </button>
-            </form>
-          </div>
+          <LoginView onLoginSubmit={handleLoginSubmit} />
         )}
       </main>
 
       {/* Footer */}
-      <Footer serverStatus={serverStatus} />
+      {currentTab !== 'login' && <Footer serverStatus={serverStatus} />}
     </div>
   );
 }
