@@ -33,12 +33,12 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
       color: '#3b82f6', // Blue
       bg: '#eff6ff',
       icon: (
-        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
         </svg>
       ),
       rowIcon: (
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
         </svg>
       )
@@ -47,12 +47,12 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
       color: '#8b5cf6', // Purple
       bg: '#f5f3ff',
       icon: (
-        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
         </svg>
       ),
       rowIcon: (
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
         </svg>
       )
@@ -61,12 +61,12 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
       color: '#10b981', // Green
       bg: '#ecfdf5',
       icon: (
-        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
           <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clipRule="evenodd" />
         </svg>
       ),
       rowIcon: (
-        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
           <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clipRule="evenodd" />
         </svg>
       )
@@ -75,12 +75,12 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
       color: '#64748b', // Slate
       bg: '#f8fafc',
       icon: (
-        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       ),
       rowIcon: (
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       )
@@ -105,7 +105,7 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
             <div style={{ color: color, display: 'flex', alignItems: 'center' }}>
               {icon}
             </div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '700', color: title === 'Active Projects' ? '#1d4ed8' : color, margin: 0 }}>
+            <h2 style={{ fontSize: '1.0rem', fontWeight: '700', color: title === 'Active Projects' ? '#1d4ed8' : color, margin: 0 }}>
               {title}
             </h2>
             <div style={{
@@ -185,13 +185,13 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
             const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
             return (
-              <div key={task.id} className="dashboard-project-card" style={{ borderLeft: `5px solid ${color}` }}>
+              <div key={task.id} className="dashboard-project-card" style={{ borderLeft: `5px solid ${color}`, opacity: task.activeStatus === 'In-Active' ? 0.55 : 1 }}>
                 <div className="dashboard-project-header">
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                   
                   {/* Category Circle Icon */}
                   <div style={{ 
-                    width: '44px', height: '44px', 
+                    width: '30px', height: '30px', 
                     borderRadius: '50%', 
                     backgroundColor: bg, 
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -201,21 +201,21 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
                     {rowIcon}
                   </div>
                   
-                  <h3 style={{ margin: '0', fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-heading)', minWidth: '180px' }}>
+                  <h3 style={{ margin: '0', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-heading)', minWidth: '180px' }}>
                     {task.title}
                   </h3>
                   
                   {/* Resource Badges */}
-                  <div style={{ display: 'flex', gap: '0.6rem', fontSize: '0.75rem', color: '#475569' }}>
-                    <span style={{ padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>
+                  <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#475569' }}>
+                    <span style={{ width: '130px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="#475569"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> 
                       {task.owner}
                     </span>
-                    <span style={{ padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>
+                    <span style={{ width: '100px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b"><path d="M13 2.05v8.45h4.5l-8.5 11.45v-8.45h-4.5l8.5-11.45z"/></svg> 
                       {task.medium}
                     </span>
-                    <span style={{ padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>
+                    <span style={{ width: '120px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/></svg> 
                       {task.startDate ? task.startDate.split('T')[0] : ''}
                     </span>
@@ -358,14 +358,21 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
                           borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,0.05)' 
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ 
-                              fontSize: '0.95rem', 
-                              fontWeight: '500', 
-                              color: isCompleted ? 'var(--text-muted)' : 'var(--text-heading)', 
-                              textDecoration: 'none' 
-                            }}>
-                              {sub.title}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '1rem' }}>
+                              <span style={{ 
+                                fontSize: '0.95rem', 
+                                fontWeight: '500', 
+                                color: isCompleted ? 'var(--text-muted)' : 'var(--text-heading)', 
+                                textDecoration: 'none' 
+                              }}>
+                                {sub.title}
+                              </span>
+                              {sub.updated_by && (
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic', marginLeft: 'auto', paddingRight: '1rem' }}>
+                                  Updated by: {sub.updated_by}
+                                </span>
+                              )}
+                            </div>
                             
                             {/* Icons for Attachment and Remark */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -374,7 +381,7 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
                                   href={`http://localhost:5000/uploads/${sub.attachment_filename}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  title="View Attachment" 
+                                  title={sub.attached_by ? `View Attachment (Attached by: ${sub.attached_by})` : 'View Attachment'} 
                                   style={{ color: '#94a3b8', display: 'flex', cursor: 'pointer', textDecoration: 'none' }}
                                 >
                                   <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -400,8 +407,13 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
                           </div>
                           
                           {visibleRemarkSubtaskId === sub.id && sub.remark && (
-                            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#64748b', fontStyle: 'italic', padding: '0.5rem', backgroundColor: 'var(--bg-body)', borderRadius: '4px', borderLeft: '3px solid var(--primary)' }}>
-                              "{sub.remark}"
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#64748b', padding: '0.5rem', backgroundColor: 'var(--bg-body)', borderRadius: '4px', borderLeft: '3px solid var(--primary)' }}>
+                              <div style={{ whiteSpace: 'pre-wrap', fontStyle: 'italic' }}>"{sub.remark}"</div>
+                              {sub.commented_by && (
+                                <div style={{ fontSize: '0.7rem', marginTop: '0.25rem', opacity: 0.8, fontStyle: 'italic' }}>
+                                  Commented by: {sub.commented_by}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

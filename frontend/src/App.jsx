@@ -8,9 +8,15 @@ import AdminView from './Pages/AdminView';
 import LoginView from './Pages/LoginView';
 
 function App() {
-  const [currentTab, setCurrentTab] = useState('dashboard');
+  const [currentTab, setCurrentTab] = useState('login');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [serverStatus, setServerStatus] = useState('checking');
+
+  // Update URL to match current tab
+  useEffect(() => {
+    window.history.pushState(null, '', `/${currentTab}`);
+  }, [currentTab]);
   
   // Task State (Dynamically fetched from backend)
   const [tasks, setTasks] = useState([]);
@@ -79,17 +85,27 @@ function App() {
     }
   };
 
-  const handleUpdateSubTaskAttachment = async (projectId, subTaskId, file) => {
+  const handleEditProject = async (id, updatedData) => {
+    try {
+      await axios.put(`http://localhost:5000/api/projects/${id}`, updatedData);
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updatedData } : t)));
+    } catch (err) {
+      console.error('Failed to edit project', err);
+    }
+  };
+
+    const handleUpdateSubTaskAttachment = async (projectId, subTaskId, file) => {
     try {
       const formData = new FormData();
       formData.append('attachment', file);
+      if (currentUser?.name) formData.append('attached_by', currentUser.name);
       const res = await axios.post(`http://localhost:5000/api/subtasks/${subTaskId}/attachment`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setTasks((prev) => prev.map((t) => {
         if (t.id === projectId && t.subTasks) {
           const updatedSubTasks = t.subTasks.map(sub => 
-            sub.id === subTaskId ? { ...sub, attachment_filename: res.data.filename, attachment_original_name: res.data.originalname } : sub
+            sub.id === subTaskId ? { ...sub, attachment_filename: res.data.filename, attachment_original_name: res.data.originalname, attached_by: currentUser?.name } : sub
           );
           return { ...t, subTasks: updatedSubTasks };
         }
@@ -125,11 +141,12 @@ function App() {
 
   const handleUpdateSubTaskStatus = async (projectId, subTaskId, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/api/subtasks/${subTaskId}/status`, { status: newStatus });
+      const updatedBy = currentUser?.name || '';
+      await axios.put(`http://localhost:5000/api/subtasks/${subTaskId}/status`, { status: newStatus, updated_by: updatedBy });
       setTasks((prev) => prev.map((t) => {
         if (t.id === projectId && t.subTasks) {
           const updatedSubTasks = t.subTasks.map(sub => 
-            sub.id === subTaskId ? { ...sub, status: newStatus } : sub
+            sub.id === subTaskId ? { ...sub, status: newStatus, updated_by: updatedBy } : sub
           );
           return { ...t, subTasks: updatedSubTasks };
         }
@@ -187,11 +204,12 @@ function App() {
 
   const handleUpdateSubTaskRemark = async (projectId, subTaskId, remark) => {
     try {
-      await axios.put(`http://localhost:5000/api/subtasks/${subTaskId}/remark`, { remark: remark });
+      const commentedBy = currentUser?.name || '';
+      await axios.put(`http://localhost:5000/api/subtasks/${subTaskId}/remark`, { remark: remark, commented_by: commentedBy });
       setTasks((prev) => prev.map((t) => {
         if (t.id === projectId && t.subTasks) {
           const updatedSubTasks = t.subTasks.map(sub => 
-            sub.id === subTaskId ? { ...sub, remark: remark } : sub
+            sub.id === subTaskId ? { ...sub, remark: remark, commented_by: commentedBy } : sub
           );
           return { ...t, subTasks: updatedSubTasks };
         }
@@ -202,23 +220,26 @@ function App() {
     }
   };
 
-  // Login Click (Triggers login view transition)
   const handleLoginClick = () => {
     if (isLoggedIn) {
       setIsLoggedIn(false);
-      setCurrentTab('dashboard');
+      setCurrentUser(null);
+      setCurrentTab('login');
     } else {
       setCurrentTab('login');
     }
   };
 
-  const handleLoginSubmit = (email, password) => {
-    // Basic hardcoded admin authentication
-    if (email === 'admin' && password === 'admin123') {
-      setIsLoggedIn(true);
-      setCurrentTab('dashboard');
-    } else {
-      alert('Invalid admin credentials! Please use admin / admin123');
+  const handleLoginSubmit = async (username, password) => {
+    try {
+      const res = await axios.post('http://localhost:5000/api/login', { username, password });
+      if (res.data.success) {
+        setIsLoggedIn(true);
+        setCurrentUser(res.data.user);
+        setCurrentTab('dashboard');
+      }
+    } catch (err) {
+      alert(err.response?.data?.error || 'Invalid credentials');
     }
   };
 
@@ -230,6 +251,7 @@ function App() {
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
           isLoggedIn={isLoggedIn}
+          currentUser={currentUser}
           onLoginClick={handleLoginClick}
         />
       )}
@@ -241,6 +263,7 @@ function App() {
             tasks={tasks}
             totalTasks={tasks.length}
             completedTasks={tasks.filter((t) => t.completed).length}
+            currentUser={currentUser}
           />
         )}
         {currentTab === 'tasks' && (
@@ -249,6 +272,7 @@ function App() {
             onAddTask={handleAddTask}
             onToggleTask={handleToggleTask}
             onDeleteTask={handleDeleteTask}
+            onEditProject={handleEditProject}
             onUpdateActiveStatus={handleUpdateActiveStatus}
             onAddBulkTasks={handleAddBulkTasks}
             onUpdateSubTaskStatus={handleUpdateSubTaskStatus}
@@ -256,10 +280,11 @@ function App() {
             onEditSubTask={handleEditSubTask}
             onUpdateSubTaskRemark={handleUpdateSubTaskRemark}
             onUpdateSubTaskAttachment={handleUpdateSubTaskAttachment}
+            currentUser={currentUser}
           />
         )}
         {currentTab === 'admin' && (
-          <AdminView serverStatus={serverStatus} />
+          <AdminView serverStatus={serverStatus} currentUser={currentUser} />
         )}
         {currentTab === 'login' && (
           <LoginView onLoginSubmit={handleLoginSubmit} />

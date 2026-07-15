@@ -1,11 +1,15 @@
 import React from 'react';
 
-function Header({ currentTab, setCurrentTab, isLoggedIn, onLoginClick }) {
+function Header({ currentTab, setCurrentTab, isLoggedIn, currentUser, onLoginClick }) {
+  const hasAdminView = currentUser?.permissions?.admin?.includes('View');
+
   const tabs = [
     { id: 'dashboard', label: 'Dashboard' },
-    { id: 'tasks', label: 'Projects' },
-    { id: 'admin', label: 'Admin' }
+    { id: 'tasks', label: 'Projects' }
   ];
+  if (hasAdminView) {
+    tabs.push({ id: 'admin', label: 'Admin' });
+  }
 
   return (
     <header className="app-header">
@@ -31,7 +35,12 @@ function Header({ currentTab, setCurrentTab, isLoggedIn, onLoginClick }) {
       </nav>
 
       {/* Right Edge: Login Button */}
-      <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        {isLoggedIn && currentUser && (
+          <span style={{ fontWeight: '600', color: 'var(--text-heading)', fontSize: '0.95rem' }}>
+            Hi, {currentUser.name}
+          </span>
+        )}
         <button className="btn btn-primary" onClick={onLoginClick}>
           {isLoggedIn ? 'Logout' : 'Login'}
         </button>

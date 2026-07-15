@@ -28,6 +28,30 @@ const upload = multer({ storage: storage });
 
 import pool from './db.js';
 
+// Database Migrations
+(async () => {
+  try {
+    const columnsToAdd = [
+      'updated_by VARCHAR(255)',
+      'commented_by VARCHAR(255)',
+      'attached_by VARCHAR(255)'
+    ];
+    for (const col of columnsToAdd) {
+      try {
+        await pool.query(`ALTER TABLE subtasks ADD COLUMN ${col}`);
+        console.log(`Added column ${col} to subtasks table`);
+      } catch (err) {
+        // Ignore duplicate column errors (ER_DUP_FIELDNAME)
+        if (err.code !== 'ER_DUP_FIELDNAME') {
+          console.error(`Migration error for ${col}:`, err);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Migration failed:', err);
+  }
+})();
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -90,6 +114,22 @@ app.post('/api/projects', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to create project' });
+  }
+});
+
+// PUT project details
+app.put('/api/projects/:id', async (req, res) => {
+  const { id } = req.params;
+  const { title, owner, medium, startDate } = req.body;
+  try {
+    await pool.query(
+      'UPDATE projects SET title = ?, owner = ?, medium = ?, start_date = ? WHERE id = ?',
+      [title, owner, medium, startDate, id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update project' });
   }
 });
 
@@ -157,9 +197,9 @@ app.post('/api/projects/:id/subtasks/bulk', async (req, res) => {
 // PUT subtask status
 app.put('/api/subtasks/:id/status', async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, updated_by } = req.body;
   try {
-    await pool.query('UPDATE subtasks SET status = ? WHERE id = ?', [status, id]);
+    await pool.query('UPDATE subtasks SET status = ?, updated_by = ? WHERE id = ?', [status, updated_by, id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -170,9 +210,9 @@ app.put('/api/subtasks/:id/status', async (req, res) => {
 // PUT subtask remark
 app.put('/api/subtasks/:id/remark', async (req, res) => {
   const { id } = req.params;
-  const { remark } = req.body;
+  const { remark, commented_by } = req.body;
   try {
-    await pool.query('UPDATE subtasks SET remark = ? WHERE id = ?', [remark, id]);
+    await pool.query('UPDATE subtasks SET remark = ?, commented_by = ? WHERE id = ?', [remark, commented_by, id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -183,6 +223,7 @@ app.put('/api/subtasks/:id/remark', async (req, res) => {
 // POST subtask attachment
 app.post('/api/subtasks/:id/attachment', upload.single('attachment'), async (req, res) => {
   const { id } = req.params;
+  const { attached_by } = req.body;
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -190,7 +231,7 @@ app.post('/api/subtasks/:id/attachment', upload.single('attachment'), async (req
     const filename = req.file.filename;
     const originalname = req.file.originalname;
     
-    await pool.query('UPDATE subtasks SET attachment_filename = ?, attachment_original_name = ? WHERE id = ?', [filename, originalname, id]);
+    await pool.query('UPDATE subtasks SET attachment_filename = ?, attachment_original_name = ?, attached_by = ? WHERE id = ?', [filename, originalname, attached_by, id]);
     res.json({ success: true, filename, originalname });
   } catch (err) {
     console.error(err);
@@ -222,6 +263,154 @@ app.put('/api/projects/:projectId/subtasks/reorder', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to reorder subtasks' });
+  }
+});
+
+// Users and Authentication Routes
+
+// POST login
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const [users] = await pool.query(`
+      SELECT u.id, u.name, u.username, u.role, u.status, r.permissions
+      FROM users u
+      LEFT JOIN roles r ON u.role = r.name
+      WHERE u.username = ? AND u.password = ?
+    `, [username, password]);
+    if (users.length > 0) {
+      if (users[0].status === 'In-Active') {
+        return res.status(403).json({ error: 'User account is disabled' });
+      }
+      res.json({ success: true, user: users[0] });
+    } else {
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// GET all users
+app.get('/api/users', async (req, res) => {
+  try {
+    const [users] = await pool.query('SELECT id, name, username, role, status FROM users ORDER BY created_at DESC');
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// POST add user
+app.post('/api/users', async (req, res) => {
+  const { name, username, password, role, status } = req.body;
+  try {
+    const [result] = await pool.query('INSERT INTO users (name, username, password, role, status) VALUES (?, ?, ?, ?, ?)', [name, username, password, role, status || 'Active']);
+    const [newUser] = await pool.query('SELECT id, name, username, role, status FROM users WHERE id = ?', [result.insertId]);
+    res.json(newUser[0]);
+  } catch (err) {
+    console.error(err);
+    if (err.code === 'ER_DUP_ENTRY') {
+      res.status(400).json({ error: 'Username already exists' });
+    } else {
+      res.status(500).json({ error: 'Failed to add user' });
+    }
+  }
+});
+
+// PUT update user
+app.put('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, username, password, role, status } = req.body;
+  try {
+    if (password) {
+      await pool.query('UPDATE users SET name = ?, username = ?, password = ?, role = ?, status = ? WHERE id = ?', [name, username, password, role, status, id]);
+    } else {
+      await pool.query('UPDATE users SET name = ?, username = ?, role = ?, status = ? WHERE id = ?', [name, username, role, status, id]);
+    }
+    const [updatedUser] = await pool.query('SELECT id, name, username, role, status FROM users WHERE id = ?', [id]);
+    res.json(updatedUser[0]);
+  } catch (err) {
+    console.error(err);
+    if (err.code === 'ER_DUP_ENTRY') {
+      res.status(400).json({ error: 'Username already exists' });
+    } else {
+      res.status(500).json({ error: 'Failed to update user' });
+    }
+  }
+});
+
+// DELETE user
+app.delete('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM users WHERE id = ?', [id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
+// Roles API
+
+// GET all roles
+app.get('/api/roles', async (req, res) => {
+  try {
+    const [roles] = await pool.query('SELECT * FROM roles ORDER BY created_at DESC');
+    res.json(roles);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch roles' });
+  }
+});
+
+// POST add role
+app.post('/api/roles', async (req, res) => {
+  const { name, description, permissions } = req.body;
+  try {
+    const [result] = await pool.query('INSERT INTO roles (name, description, permissions) VALUES (?, ?, ?)', [name, description, JSON.stringify(permissions)]);
+    const [newRole] = await pool.query('SELECT * FROM roles WHERE id = ?', [result.insertId]);
+    res.json(newRole[0]);
+  } catch (err) {
+    console.error(err);
+    if (err.code === 'ER_DUP_ENTRY') {
+      res.status(400).json({ error: 'Role name already exists' });
+    } else {
+      res.status(500).json({ error: 'Failed to add role' });
+    }
+  }
+});
+
+// PUT update role
+app.put('/api/roles/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, description, permissions } = req.body;
+  try {
+    await pool.query('UPDATE roles SET name = ?, description = ?, permissions = ? WHERE id = ?', [name, description, JSON.stringify(permissions), id]);
+    const [updatedRole] = await pool.query('SELECT * FROM roles WHERE id = ?', [id]);
+    res.json(updatedRole[0]);
+  } catch (err) {
+    console.error(err);
+    if (err.code === 'ER_DUP_ENTRY') {
+      res.status(400).json({ error: 'Role name already exists' });
+    } else {
+      res.status(500).json({ error: 'Failed to update role' });
+    }
+  }
+});
+
+// DELETE role
+app.delete('/api/roles/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM roles WHERE id = ?', [id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete role' });
   }
 });
 

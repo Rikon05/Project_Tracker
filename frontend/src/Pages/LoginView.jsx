@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import './LoginView.css';
 
 function LoginView({ onLoginSubmit }) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLoginSubmit(email, password);
+    onLoginSubmit(username, password);
   };
 
   // Generate 40 dashes for the circular border
@@ -21,14 +21,14 @@ function LoginView({ onLoginSubmit }) {
         {/* Render the radial dashes */}
         <div className="radial-dashes">
           {dashes.map((_, i) => {
-            // Top-left dashes are cyan. Using a 40-dash circle (9deg each).
-            // Indices ~27 to ~36 map to the top-left area.
-            const isCyan = i >= 28 && i <= 34;
             return (
               <div
                 key={i}
-                className={`dash ${isCyan ? 'cyan-dash' : 'dark-dash'}`}
-                style={{ transform: `rotate(${i * 9}deg) translateY(-180px)` }}
+                className="dash animated-dash"
+                style={{
+                  transform: `rotate(${i * 9}deg) translateY(-180px)`,
+                  animationDelay: `-${(40 - i) * 0.1}s`
+                }}
               />
             );
           })}
@@ -42,8 +42,8 @@ function LoginView({ onLoginSubmit }) {
               <input
                 type="text"
                 placeholder="Username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
@@ -60,12 +60,12 @@ function LoginView({ onLoginSubmit }) {
 
 
             <button type="submit" className="login-btn-custom">Login</button>
-
-            <div className="app-title-container">
-              <span className="app-title">Project Tracker</span>
-            </div>
           </form>
         </div>
+      </div>
+
+      <div className="app-title-container">
+        <span className="app-title">Tracker PRO</span>
       </div>
     </div>
   );

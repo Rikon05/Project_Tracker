@@ -1,8 +1,9 @@
 .login-view-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 80vh;
+  min-height: 92vh;
   width: 100%;
   background-color: transparent;
   font-family: 'Inter', sans-serif;
@@ -59,10 +60,30 @@
   box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
 }
 
+@keyframes cyan-chase {
+  0% {
+    background-color: #00e5ff;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
+  }
+  5% {
+    background-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  }
+  20%, 100% {
+    background-color: #243956;
+    box-shadow: none;
+  }
+}
+
+.animated-dash {
+  background-color: #243956;
+  animation: cyan-chase 4s infinite linear;
+}
+
 .login-card {
   position: relative;
   z-index: 10;
-  width: 260px;
+  width: 220px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -74,6 +95,7 @@
   font-weight: 700;
   margin-bottom: 1.8rem;
   margin-top: 0;
+  transform: translateY(-2.5rem);
   text-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
 }
 
@@ -124,9 +146,9 @@
 
 .login-btn-custom {
   width: 100%;
-  background-color: #00e5ff;
+  background-color: rgba(0, 229, 255, 0.25);
   color: #1b2330;
-  border: none;
+  border: 1px solid rgba(0, 229, 255, 0.4);
   padding: 0.75rem;
   border-radius: 20px;
   font-weight: 700;
@@ -137,17 +159,17 @@
 }
 
 .login-btn-custom:hover {
-  background-color: #00c6dd;
+  background-color: rgba(0, 198, 221, 0.45);
   transform: translateY(-1px);
 }
 
 .app-title-container {
-  margin-top: 0.6rem;
+  margin-top: 2rem;
 }
 
 .app-title-container .app-title {
   color: #0f172a;
-  font-size: 0.95rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }

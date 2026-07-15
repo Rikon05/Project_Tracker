@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import './ProjectsView.css';
 
-function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onUpdateActiveStatus, onAddBulkTasks, onUpdateSubTaskStatus, onReorderSubTask, onEditSubTask, onUpdateSubTaskRemark, onUpdateSubTaskAttachment }) {
+function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onEditProject, onUpdateActiveStatus, onAddBulkTasks, onUpdateSubTaskStatus, onReorderSubTask, onEditSubTask, onUpdateSubTaskRemark, onUpdateSubTaskAttachment, currentUser }) {
+  const projectPerms = currentUser?.permissions?.projects || [];
+  const taskPerms = currentUser?.permissions?.tasks || [];
   const [showForm, setShowForm] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState(null);
+  const [editProjectFormData, setEditProjectFormData] = useState({ title: '', owner: '', medium: '', startDate: '' });
   const [bulkAddProjectId, setBulkAddProjectId] = useState(null);
   const [viewTasksProjectId, setViewTasksProjectId] = useState(null);
   const [draggedSubTaskId, setDraggedSubTaskId] = useState(null);
@@ -63,6 +67,52 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onUpdateAc
     setBulkText('');
   };
 
+  const handleExportProjects = () => {
+    let csvContent = 'Project Title,Owner,Category,Start Date,Status,Completed Percentage,Active Status\n';
+    
+    tasks.forEach(task => {
+      const totalSubTasks = task.subTasks ? task.subTasks.length : 0;
+      const completedSubTasks = task.subTasks ? task.subTasks.filter(sub => sub.status === 'Completed').length : 0;
+      const inProgressSubTasks = task.subTasks ? task.subTasks.filter(sub => sub.status === 'In-Progress').length : 0;
+      const percentage = totalSubTasks > 0 ? Math.round((completedSubTasks / totalSubTasks) * 100) : 0;
+      
+      let projectStatus = 'Not Started';
+      if (totalSubTasks > 0) {
+        if (completedSubTasks === totalSubTasks) {
+          projectStatus = 'Completed';
+        } else if (completedSubTasks > 0 || inProgressSubTasks > 0) {
+          projectStatus = 'In-Progress';
+        }
+      }
+
+      const activeStatus = task.activeStatus || 'Active';
+      const startDate = task.startDate ? task.startDate.split('T')[0] : '';
+      
+      const escapeCsv = (str) => `"${(str || '').toString().replace(/"/g, '""')}"`;
+      
+      const row = [
+        escapeCsv(task.title),
+        escapeCsv(task.owner),
+        escapeCsv(task.medium),
+        escapeCsv(startDate),
+        escapeCsv(projectStatus),
+        `${percentage}%`,
+        escapeCsv(activeStatus)
+      ].join(',');
+      
+      csvContent += row + '\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `projects_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="tasks-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -71,13 +121,24 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onUpdateAc
           <p className="view-subtitle" style={{ marginBottom: 0 }}>Manage project milestones and update task status.</p>
         </div>
         {!bulkAddProjectId && (
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowForm(!showForm)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            {showForm ? 'Cancel' : '+ Add Project'}
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={handleExportProjects}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              Export
+            </button>
+            {projectPerms.includes('Create') && (
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowForm(!showForm)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                {showForm ? 'Cancel' : '+ Add Project'}
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -223,9 +284,18 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onUpdateAc
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', width: '100%' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span className="task-text" style={{ fontWeight: '600', fontSize: '1.05rem' }}>
-                        {task.title}
-                      </span>
+                      {editingProjectId === task.id ? (
+                        <input
+                          type="text"
+                          value={editProjectFormData.title}
+                          onChange={(e) => setEditProjectFormData({ ...editProjectFormData, title: e.target.value })}
+                          style={{ fontWeight: '600', fontSize: '0.95rem', padding: '0.25rem', border: '1px solid var(--primary)', borderRadius: '4px' }}
+                        />
+                      ) : (
+                        <span className="task-text" style={{ fontWeight: '600', fontSize: '0.95rem' }}>
+                          {task.title}
+                        </span>
+                      )}
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -249,38 +319,80 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onUpdateAc
                   fontSize: '0.8rem',
                   color: 'var(--text-muted)'
                 }}>
-                  <span>👤 Owner: <strong>{task.owner}</strong></span>
-                  <span>⚡ Medium: <strong>{task.medium}</strong></span>
-                  <span>📅 Started: <strong>{task.startDate ? task.startDate.split('T')[0] : ''}</strong></span>
+                  {editingProjectId === task.id ? (
+                    <>
+                      <span>👤 Owner: <input type="text" value={editProjectFormData.owner} onChange={(e) => setEditProjectFormData({ ...editProjectFormData, owner: e.target.value })} style={{ padding: '0.15rem', border: '1px solid var(--border)', borderRadius: '4px' }} /></span>
+                      <span>⚡ Medium: <input type="text" value={editProjectFormData.medium} onChange={(e) => setEditProjectFormData({ ...editProjectFormData, medium: e.target.value })} style={{ padding: '0.15rem', border: '1px solid var(--border)', borderRadius: '4px' }} /></span>
+                      <span>📅 Started: <input type="date" value={editProjectFormData.startDate} onChange={(e) => setEditProjectFormData({ ...editProjectFormData, startDate: e.target.value })} style={{ padding: '0.15rem', border: '1px solid var(--border)', borderRadius: '4px' }} /></span>
+                    </>
+                  ) : (
+                    <>
+                      <span>👤 Owner: <strong>{task.owner}</strong></span>
+                      <span>⚡ Medium: <strong>{task.medium}</strong></span>
+                      <span>📅 Started: <strong>{task.startDate ? task.startDate.split('T')[0] : ''}</strong></span>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', alignSelf: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                <button className="btn btn-secondary" disabled={viewTasksProjectId === task.id} onClick={() => setBulkAddProjectId(task.id)}>Add Tasks</button>
-                <button 
-                  className="btn btn-secondary" 
-                  disabled={totalSubTasks === 0 && viewTasksProjectId !== task.id}
-                  onClick={() => setViewTasksProjectId(viewTasksProjectId === task.id ? null : task.id)}
-                >
-                  {viewTasksProjectId === task.id ? 'Hide Tasks' : 'View Tasks'}
-                </button>
-                <button className="btn btn-secondary" disabled={viewTasksProjectId === task.id}>Edit</button>
-                <select 
-                  className="btn btn-secondary" 
-                  disabled={viewTasksProjectId === task.id}
-                  style={{ appearance: 'auto', paddingRight: '1.5rem', cursor: 'pointer' }}
-                  value={task.activeStatus || 'Active'}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    const originalValue = newValue === 'Active' ? 'In-Active' : 'Active';
-                    // Revert visually while modal is open
-                    e.target.value = originalValue;
-                    setConfirmModal({ isOpen: true, targetSelect: e.target, originalValue, newValue, taskId: task.id });
-                  }}
-                >
-                  <option value="Active">Active</option>
-                  <option value="In-Active">In-Active</option>
-                </select>
+                {projectPerms.includes('Add Task') && (
+                  <button className="btn btn-secondary" disabled={viewTasksProjectId === task.id} onClick={() => setBulkAddProjectId(task.id)} style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem' }}>Add Tasks</button>
+                )}
+                {projectPerms.includes('View Task') && (
+                  <button 
+                    className="btn btn-secondary" 
+                    disabled={totalSubTasks === 0 && viewTasksProjectId !== task.id}
+                    onClick={() => setViewTasksProjectId(viewTasksProjectId === task.id ? null : task.id)}
+                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem' }}
+                  >
+                    {viewTasksProjectId === task.id ? 'Hide Tasks' : 'View Tasks'}
+                  </button>
+                )}
+                {projectPerms.includes('Edit') && (
+                  editingProjectId === task.id ? (
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="btn btn-secondary" onClick={() => setEditingProjectId(null)} style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem' }}>Cancel</button>
+                      <button className="btn btn-primary" onClick={() => {
+                        onEditProject(task.id, editProjectFormData);
+                        setEditingProjectId(null);
+                      }} style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem' }}>Save</button>
+                    </div>
+                  ) : (
+                    <button 
+                      className="btn btn-secondary" 
+                      disabled={viewTasksProjectId === task.id}
+                      style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem' }}
+                      onClick={() => {
+                        setEditingProjectId(task.id);
+                        setEditProjectFormData({
+                          title: task.title,
+                          owner: task.owner,
+                          medium: task.medium,
+                          startDate: task.startDate ? task.startDate.split('T')[0] : ''
+                        });
+                      }}
+                    >Edit</button>
+                  )
+                )}
+                {projectPerms.includes('Project Status') && (
+                  <select 
+                    className="btn btn-secondary" 
+                    disabled={viewTasksProjectId === task.id}
+                    style={{ appearance: 'auto', paddingRight: '1.5rem', cursor: 'pointer', fontSize: '0.75rem', padding: '0.3rem 1.5rem 0.3rem 0.75rem' }}
+                    value={task.activeStatus || 'Active'}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      const originalValue = newValue === 'Active' ? 'In-Active' : 'Active';
+                      // Revert visually while modal is open
+                      e.target.value = originalValue;
+                      setConfirmModal({ isOpen: true, targetSelect: e.target, originalValue, newValue, taskId: task.id });
+                    }}
+                  >
+                    <option value="Active">Active</option>
+                    <option value="In-Active">In-Active</option>
+                  </select>
+                )}
                 <div style={{
                   padding: '0.25rem 0.75rem',
                   borderRadius: 'var(--radius-sm)',
@@ -400,72 +512,84 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onUpdateAc
                                 }
                               }}
                             />
-                            <div 
-                              style={{ 
-                                cursor: 'pointer', 
-                                color: 'var(--text-muted)', 
-                                padding: '0 4px', 
-                                display: 'flex',
-                                alignItems: 'center'
-                              }}
-                              title="Add Attachment"
-                              onClick={() => {
-                                document.getElementById(`file-upload-${sub.id}`).click();
-                              }}
-                            >
-                              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                              </svg>
+                            {taskPerms.includes('Attachment') && (
+                              <div 
+                                style={{ 
+                                  cursor: 'pointer', 
+                                  color: 'var(--text-muted)', 
+                                  padding: '0 4px', 
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}
+                                title="Add Attachment"
+                                onClick={() => {
+                                  document.getElementById(`file-upload-${sub.id}`).click();
+                                }}
+                              >
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                              </div>
+                            )}
+                            {taskPerms.includes('Comment') && (
+                              <div 
+                                style={{ 
+                                  cursor: 'pointer', 
+                                  color: 'var(--text-muted)', 
+                                  padding: '0 4px', 
+                                  fontSize: '1rem', 
+                                  userSelect: 'none',
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}
+                                title="Add Remarks"
+                                onClick={() => {
+                                  setRemarkingSubTaskId(sub.id);
+                                  setRemarkText(sub.remark || '');
+                                }}
+                              >
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                              </div>
+                            )}
+                            {taskPerms.includes('Edit') && (
+                              <div 
+                                style={{ 
+                                  cursor: 'pointer', 
+                                  color: 'var(--text-muted)', 
+                                  padding: '0 4px', 
+                                  fontSize: '1rem', 
+                                  userSelect: 'none',
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}
+                                title="Edit Task"
+                                onClick={() => {
+                                  setEditingSubTaskId(sub.id);
+                                  setEditSubTaskText(sub.title);
+                                }}
+                              >
+                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                              <select 
+                                className="status-select" 
+                                value={sub.status || 'Not Started'} 
+                                onChange={(e) => onUpdateSubTaskStatus && onUpdateSubTaskStatus(task.id, sub.id, e.target.value)}
+                                disabled={!taskPerms.includes('Status Update')}
+                              >
+                                <option value="Not Started">Not Started</option>
+                                <option value="In-Progress">In-Progress</option>
+                                <option value="Completed">Completed</option>
+                              </select>
+                              {sub.updated_by && (
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Updated by: {sub.updated_by}</span>
+                              )}
                             </div>
-                            <div 
-                              style={{ 
-                                cursor: 'pointer', 
-                                color: 'var(--text-muted)', 
-                                padding: '0 4px', 
-                                fontSize: '1rem', 
-                                userSelect: 'none',
-                                display: 'flex',
-                                alignItems: 'center'
-                              }}
-                              title="Add Remarks"
-                              onClick={() => {
-                                setRemarkingSubTaskId(sub.id);
-                                setRemarkText(sub.remark || '');
-                              }}
-                            >
-                              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                              </svg>
-                            </div>
-                            <div 
-                              style={{ 
-                                cursor: 'pointer', 
-                                color: 'var(--text-muted)', 
-                                padding: '0 4px', 
-                                fontSize: '1rem', 
-                                userSelect: 'none',
-                                display: 'flex',
-                                alignItems: 'center'
-                              }}
-                              title="Edit Task"
-                              onClick={() => {
-                                setEditingSubTaskId(sub.id);
-                                setEditSubTaskText(sub.title);
-                              }}
-                            >
-                              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                              </svg>
-                            </div>
-                            <select 
-                              className="status-select" 
-                              value={sub.status || 'Not Started'} 
-                              onChange={(e) => onUpdateSubTaskStatus && onUpdateSubTaskStatus(task.id, sub.id, e.target.value)}
-                            >
-                              <option value="Not Started">Not Started</option>
-                              <option value="In-Progress">In-Progress</option>
-                              <option value="Completed">Completed</option>
-                            </select>
                           </div>
                           </div>
                           {(remarkingSubTaskId === sub.id || sub.remark) && (
@@ -506,23 +630,27 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onUpdateAc
                                     >Save</button>
                                   </div>
                                 </div>
-                              ) : (
-                                <div style={{ 
-                                  fontSize: '0.85rem', 
-                                  color: 'var(--text-muted)', 
-                                  backgroundColor: 'var(--bg-card)', 
-                                  padding: '0.5rem', 
-                                  borderRadius: '4px',
-                                  borderLeft: '3px solid var(--primary)',
-                                  whiteSpace: 'pre-wrap',
-                                  boxShadow: 'var(--shadow-sm)'
-                                }}>
-                                  {sub.remark}
-                                </div>
-                              )}
+                                ) : (
+                                  <div style={{ 
+                                    fontSize: '0.85rem', 
+                                    color: 'var(--text-muted)', 
+                                    backgroundColor: 'var(--bg-card)', 
+                                    padding: '0.5rem', 
+                                    borderRadius: '4px',
+                                    borderLeft: '3px solid var(--primary)',
+                                    boxShadow: 'var(--shadow-sm)'
+                                  }}>
+                                    <div style={{ whiteSpace: 'pre-wrap' }}>{sub.remark}</div>
+                                    {sub.commented_by && (
+                                      <div style={{ fontSize: '0.7rem', marginTop: '0.25rem', opacity: 0.8, fontStyle: 'italic' }}>
+                                        Commented by: {sub.commented_by}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               
                               {sub.attachment_original_name && (
-                                <div style={{ marginTop: '0.5rem' }}>
+                                <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                   <a 
                                     href={`http://localhost:5000/uploads/${sub.attachment_filename}`} 
                                     target="_blank" 
@@ -545,6 +673,11 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onUpdateAc
                                     </svg>
                                     {sub.attachment_original_name}
                                   </a>
+                                  {sub.attached_by && (
+                                    <div style={{ fontSize: '0.7rem', opacity: 0.8, fontStyle: 'italic', paddingLeft: '0.2rem' }}>
+                                      Attached by: {sub.attached_by}
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
