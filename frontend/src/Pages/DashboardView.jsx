@@ -10,7 +10,7 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
     const completedSubTasks = task.subTasks ? task.subTasks.filter(sub => sub.status === 'Completed').length : 0;
     const inProgressSubTasks = task.subTasks ? task.subTasks.filter(sub => sub.status === 'In-Progress').length : 0;
     const percentage = totalSubTasks > 0 ? Math.round((completedSubTasks / totalSubTasks) * 100) : 0;
-    
+
     let projectStatus = 'Not Started';
     if (totalSubTasks > 0) {
       if (completedSubTasks === totalSubTasks) {
@@ -19,7 +19,7 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
         projectStatus = 'In-Progress';
       }
     }
-    
+
     return { projectStatus, percentage };
   };
 
@@ -93,24 +93,24 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
     const config = categoryConfig[title] || { color: '#94a3b8', bg: '#f1f5f9', icon: null, rowIcon: null };
     const { color, bg, icon, rowIcon } = config;
     const count = projectsList.length;
-    
+
     const isViewAll = viewAllCategories[title];
     const displayedProjects = isViewAll ? projectsList : projectsList.slice(0, 3);
 
     return (
-      <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ marginBottom: '2.5rem', marginTop: title === 'Active Projects' ? '0.8rem' : '0' }}>
         {/* Header Area */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <div style={{ color: color, display: 'flex', alignItems: 'center' }}>
+            <div style={{ color: title === 'Active Projects' ? 'var(--text-heading)' : color, display: 'flex', alignItems: 'center' }}>
               {icon}
             </div>
-            <h2 style={{ fontSize: '1.0rem', fontWeight: '700', color: title === 'Active Projects' ? '#1d4ed8' : color, margin: 0 }}>
+            <h2 style={{ fontSize: '1.0rem', fontWeight: '700', color: title === 'Active Projects' ? 'var(--text-heading)' : color, margin: 0 }}>
               {title}
             </h2>
             <div style={{
-              backgroundColor: bg,
-              color: color,
+              backgroundColor: title === 'Active Projects' ? 'rgba(255, 255, 255, 0.65)' : bg,
+              color: title === 'Active Projects' ? 'var(--text-heading)' : color,
               padding: '0.05rem 0.5rem',
               borderRadius: '20px',
               fontSize: '0.75rem',
@@ -121,7 +121,7 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
             </div>
           </div>
           {count > 3 && (
-            <button 
+            <button
               onClick={() => setViewAllCategories(prev => ({ ...prev, [title]: !prev[title] }))}
               style={{
                 display: 'flex',
@@ -138,19 +138,19 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
                 cursor: 'pointer'
               }}
             >
-              {isViewAll ? 'View less' : 'View all'} 
-              <svg 
-                width="14" 
-                height="14" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
+              {isViewAll ? 'View less' : 'View all'}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
                 strokeLinejoin="round"
                 style={{ transform: isViewAll ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
               >
-                <path d="M5 12h14M12 5l7 7-7 7"/>
+                <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </button>
           )}
@@ -160,12 +160,12 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {displayedProjects.map((task) => {
             const { projectStatus, percentage } = getProjectMetrics(task);
-            
+
             // Status styling exactly like mockup
             let statusColor = '#94a3b8';
             let statusBg = '#f1f5f9';
             let statusDot = '#94a3b8';
-            
+
             if (projectStatus === 'Completed') {
               statusColor = '#10b981';
               statusBg = '#ecfdf5';
@@ -187,253 +187,264 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
             return (
               <div key={task.id} className="dashboard-project-card" style={{ borderLeft: `5px solid ${color}`, opacity: task.activeStatus === 'In-Active' ? 0.55 : 1 }}>
                 <div className="dashboard-project-header">
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                  
-                  {/* Category Circle Icon */}
-                  <div style={{ 
-                    width: '30px', height: '30px', 
-                    borderRadius: '50%', 
-                    backgroundColor: bg, 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: color,
-                    flexShrink: 0
-                  }}>
-                    {rowIcon}
-                  </div>
-                  
-                  <h3 style={{ margin: '0', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-heading)', minWidth: '180px' }}>
-                    {task.title}
-                  </h3>
-                  
-                  {/* Resource Badges */}
-                  <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#475569' }}>
-                    <span style={{ width: '130px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#475569"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> 
-                      {task.owner}
-                    </span>
-                    <span style={{ width: '100px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b"><path d="M13 2.05v8.45h4.5l-8.5 11.45v-8.45h-4.5l8.5-11.45z"/></svg> 
-                      {task.medium}
-                    </span>
-                    <span style={{ width: '120px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/></svg> 
-                      {task.startDate ? task.startDate.split('T')[0] : ''}
-                    </span>
-                  </div>
-                </div>
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                  {/* Round Icon for Percentage */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ position: 'relative', width: '40px', height: '40px' }}>
-                      <svg width="40" height="40" style={{ transform: 'rotate(-90deg)' }}>
-                        <circle
-                          cx="20"
-                          cy="20"
-                          r={radius}
-                          fill="none"
-                          stroke="#e2e8f0"
-                          strokeWidth="4"
-                        />
-                        <circle
-                          cx="20"
-                          cy="20"
-                          r={radius}
-                          fill="none"
-                          stroke={color}
-                          strokeWidth="4"
-                          strokeDasharray={circumference}
-                          strokeDashoffset={strokeDashoffset}
-                          strokeLinecap="round"
-                          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                        />
-                      </svg>
-                      <div style={{
-                        position: 'absolute',
-                        top: 0, left: 0, right: 0, bottom: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.65rem',
-                        fontWeight: '700',
-                        color: 'var(--text-heading)'
-                      }}>
-                        {percentage}%
-                      </div>
+                    {/* Category Circle Icon */}
+                    <div style={{
+                      width: '30px', height: '30px',
+                      borderRadius: '50%',
+                      backgroundColor: bg,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: color,
+                      flexShrink: 0
+                    }}>
+                      {rowIcon}
+                    </div>
+
+                    <h3 style={{ margin: '0', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-heading)', minWidth: '180px' }}>
+                      {task.title}
+                    </h3>
+
+                    {/* Resource Badges */}
+                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#475569' }}>
+                      <span style={{ width: '130px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#475569"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                        {task.owner}
+                      </span>
+                      <span style={{ width: '100px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b"><path d="M13 2.05v8.45h4.5l-8.5 11.45v-8.45h-4.5l8.5-11.45z" /></svg>
+                        {task.medium}
+                      </span>
+                      <span style={{ width: '120px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z" /></svg>
+                        {task.startDate ? task.startDate.split('T')[0] : ''}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Status Badge */}
-                  <div style={{
-                    padding: '0.35rem 1rem',
-                    borderRadius: '20px',
-                    fontSize: '0.75rem',
-                    fontWeight: '700',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    backgroundColor: statusBg,
-                    color: statusColor,
-                    minWidth: '110px',
-                    whiteSpace: 'nowrap',
-                    justifyContent: 'flex-start'
-                  }}>
-                    <div className={projectStatus === 'In-Progress' ? 'status-dot-blink' : ''} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: statusDot, flexShrink: 0 }}></div>
-                    {projectStatus}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    {/* Round Icon for Percentage */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+                        <svg width="40" height="40" style={{ transform: 'rotate(-90deg)' }}>
+                          <circle
+                            cx="20"
+                            cy="20"
+                            r={radius}
+                            fill="none"
+                            stroke="#e2e8f0"
+                            strokeWidth="4"
+                          />
+                          <circle
+                            cx="20"
+                            cy="20"
+                            r={radius}
+                            fill="none"
+                            stroke={color}
+                            strokeWidth="4"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={strokeDashoffset}
+                            strokeLinecap="round"
+                            style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                          />
+                        </svg>
+                        <div style={{
+                          position: 'absolute',
+                          top: 0, left: 0, right: 0, bottom: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.65rem',
+                          fontWeight: '700',
+                          color: 'var(--text-heading)'
+                        }}>
+                          {percentage}%
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <div style={{
+                      padding: '0.35rem 1rem',
+                      borderRadius: '20px',
+                      fontSize: '0.75rem',
+                      fontWeight: '700',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      backgroundColor: statusBg,
+                      color: statusColor,
+                      minWidth: '110px',
+                      whiteSpace: 'nowrap',
+                      justifyContent: 'flex-start'
+                    }}>
+                      <div className={projectStatus === 'In-Progress' ? 'status-dot-blink' : ''} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: statusDot, flexShrink: 0 }}></div>
+                      {projectStatus}
+                    </div>
+
+                    {/* Expand Chevron */}
+                    <button
+                      onClick={() => setExpandedProjectId(prev => prev === task.id ? null : task.id)}
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '0.5rem', color: 'var(--text-muted)',
+                        transform: expandedProjectId === task.id ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease'
+                      }}
+                    >
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </button>
                   </div>
-                  
-                  {/* Expand Chevron */}
-                  <button 
-                    onClick={() => setExpandedProjectId(prev => prev === task.id ? null : task.id)}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: '0.5rem', color: 'var(--text-muted)',
-                      transform: expandedProjectId === task.id ? 'rotate(180deg)' : 'rotate(0deg)',
-                      transition: 'transform 0.2s ease'
-                    }}
-                  >
-                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                    </svg>
-                  </button>
                 </div>
-              </div>
-              
-              {/* Subtasks List */}
-              {expandedProjectId === task.id && task.subTasks && task.subTasks.length > 0 && (
-                <div style={{
-                  borderTop: '1px solid rgba(255, 255, 255, 0.4)',
-                  padding: '1.5rem',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                  {task.subTasks.map((sub, index) => {
-                    const isLast = index === task.subTasks.length - 1;
-                    const isCompleted = sub.status === 'Completed';
-                    return (
-                      <div key={sub.id} style={{ display: 'flex', gap: '1.5rem', position: 'relative' }}>
-                        
-                        {/* Timeline Column */}
-                        <div style={{ position: 'relative', width: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          {/* Vertical Line connecting dots */}
-                          {!isLast && (
+
+                {/* Subtasks List */}
+                {expandedProjectId === task.id && task.subTasks && task.subTasks.length > 0 && (
+                  <div style={{
+                    borderTop: '1px solid rgba(255, 255, 255, 0.4)',
+                    padding: '1.5rem',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}>
+                    {task.subTasks.map((sub, index) => {
+                      const isLast = index === task.subTasks.length - 1;
+                      const isCompleted = sub.status === 'Completed';
+                      return (
+                        <div key={sub.id} style={{ display: 'flex', gap: '1.5rem', position: 'relative' }}>
+
+                          {/* Timeline Column */}
+                          <div style={{ position: 'relative', width: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            {/* Vertical Line connecting dots */}
+                            {!isLast && (
+                              <div style={{
+                                position: 'absolute',
+                                width: '4px',
+                                backgroundColor: isCompleted ? '#3b82f6' : '#cbd5e1',
+                                top: '1.5rem',
+                                bottom: '-1.5rem',
+                                zIndex: 1
+                              }} />
+                            )}
+
+                            {/* Node Dot */}
                             <div style={{
-                              position: 'absolute',
-                              width: '4px',
-                              backgroundColor: isCompleted ? '#3b82f6' : '#cbd5e1',
-                              top: '1.5rem', 
-                              bottom: '-1.5rem',
-                              zIndex: 1
-                            }} />
-                          )}
-                          
-                          {/* Node Dot */}
+                              position: 'relative',
+                              marginTop: '1rem',
+                              width: '22px', height: '22px',
+                              borderRadius: '50%',
+                              backgroundColor: isCompleted ? '#10b981' : '#ffffff',
+                              border: `3px solid ${isCompleted ? '#10b981' : '#cbd5e1'}`,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              zIndex: 2,
+                              boxShadow: '0 0 0 6px rgba(255, 255, 255, 0.4)'
+                            }}>
+                              {isCompleted && (
+                                <svg width="14" height="14" fill="white" viewBox="0 0 24 24">
+                                  <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                                </svg>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Content Column */}
                           <div style={{
-                            position: 'relative',
-                            marginTop: '1rem',
-                            width: '22px', height: '22px',
-                            borderRadius: '50%',
-                            backgroundColor: isCompleted ? '#10b981' : '#ffffff',
-                            border: `3px solid ${isCompleted ? '#10b981' : '#cbd5e1'}`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            zIndex: 2,
-                            boxShadow: '0 0 0 6px rgba(255, 255, 255, 0.4)'
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            padding: '1rem 0',
+                            borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,0.05)'
                           }}>
-                            {isCompleted && (
-                              <svg width="14" height="14" fill="white" viewBox="0 0 24 24">
-                                <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                              </svg>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '1rem' }}>
+                                <span style={{
+                                  fontSize: '0.95rem',
+                                  fontWeight: '500',
+                                  color: isCompleted ? 'var(--text-muted)' : 'var(--text-heading)',
+                                  textDecoration: 'none'
+                                }}>
+                                  {sub.title}
+                                </span>
+                                {sub.updated_by && (
+                                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic', marginLeft: 'auto', paddingRight: '1rem' }}>
+                                    {sub.updated_by} {sub.updated_at && `on ${new Date(sub.updated_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Icons for Attachment and Remark */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {sub.attachment_original_name && (
+                                  <a
+                                    href={`http://${window.location.hostname}:5000/uploads/${sub.attachment_filename}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    title={sub.attached_by ? `View Attachment (${sub.attached_by}${sub.attached_at ? ` on ${new Date(sub.attached_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''})` : 'View Attachment'}
+                                    style={{ color: '#94a3b8', display: 'flex', cursor: 'pointer', textDecoration: 'none' }}
+                                  >
+                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                    </svg>
+                                  </a>
+                                )}
+                                {((sub.comments && sub.comments.length > 0) || sub.remark) && (
+                                  <span
+                                    title="Toggle Comments"
+                                    style={{ color: visibleRemarkSubtaskId === sub.id ? 'var(--primary)' : '#94a3b8', display: 'flex', cursor: 'pointer' }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setVisibleRemarkSubtaskId(prev => prev === sub.id ? null : sub.id);
+                                    }}
+                                  >
+                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {visibleRemarkSubtaskId === sub.id && ((sub.comments && sub.comments.length > 0) || sub.remark) && (
+                              <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {(sub.comments && sub.comments.length > 0 ? sub.comments : (sub.remark ? [{ text: sub.remark, commented_by: sub.commented_by, commented_at: sub.commented_at }] : [])).map((comment, idx) => (
+                                  <div key={idx} style={{
+                                    fontSize: '0.85rem',
+                                    color: '#64748b',
+                                    padding: '0.5rem',
+                                    backgroundColor: 'var(--bg-body)',
+                                    borderRadius: '4px',
+                                    borderLeft: '3px solid var(--primary)'
+                                  }}>
+                                    <div style={{ whiteSpace: 'pre-wrap', fontStyle: 'italic' }}>"{comment.text}"</div>
+                                    {comment.commented_by && (
+                                      <div style={{ fontSize: '0.7rem', marginTop: '0.25rem', opacity: 0.8, fontStyle: 'italic' }}>
+                                        {comment.commented_by} {comment.commented_at && `on ${new Date(comment.commented_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </div>
                         </div>
-
-                        {/* Content Column */}
-                        <div style={{ 
-                          flex: 1, 
-                          display: 'flex', 
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          padding: '1rem 0',
-                          borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,0.05)' 
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '1rem' }}>
-                              <span style={{ 
-                                fontSize: '0.95rem', 
-                                fontWeight: '500', 
-                                color: isCompleted ? 'var(--text-muted)' : 'var(--text-heading)', 
-                                textDecoration: 'none' 
-                              }}>
-                                {sub.title}
-                              </span>
-                              {sub.updated_by && (
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic', marginLeft: 'auto', paddingRight: '1rem' }}>
-                                  Updated by: {sub.updated_by}
-                                </span>
-                              )}
-                            </div>
-                            
-                            {/* Icons for Attachment and Remark */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {sub.attachment_original_name && (
-                                <a 
-                                  href={`http://localhost:5000/uploads/${sub.attachment_filename}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  title={sub.attached_by ? `View Attachment (Attached by: ${sub.attached_by})` : 'View Attachment'} 
-                                  style={{ color: '#94a3b8', display: 'flex', cursor: 'pointer', textDecoration: 'none' }}
-                                >
-                                  <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                  </svg>
-                                </a>
-                              )}
-                              {sub.remark && (
-                                <span 
-                                  title="Toggle Remark" 
-                                  style={{ color: visibleRemarkSubtaskId === sub.id ? 'var(--primary)' : '#94a3b8', display: 'flex', cursor: 'pointer' }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setVisibleRemarkSubtaskId(prev => prev === sub.id ? null : sub.id);
-                                  }}
-                                >
-                                  <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                  </svg>
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {visibleRemarkSubtaskId === sub.id && sub.remark && (
-                            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#64748b', padding: '0.5rem', backgroundColor: 'var(--bg-body)', borderRadius: '4px', borderLeft: '3px solid var(--primary)' }}>
-                              <div style={{ whiteSpace: 'pre-wrap', fontStyle: 'italic' }}>"{sub.remark}"</div>
-                              {sub.commented_by && (
-                                <div style={{ fontSize: '0.7rem', marginTop: '0.25rem', opacity: 0.8, fontStyle: 'italic' }}>
-                                  Commented by: {sub.commented_by}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              {expandedProjectId === task.id && (!task.subTasks || task.subTasks.length === 0) && (
-                <div style={{
-                  borderTop: '1px solid rgba(255, 255, 255, 0.4)',
-                  padding: '1.5rem',
-                  textAlign: 'center',
-                  color: 'var(--text-muted)',
-                  fontSize: '0.9rem'
-                }}>
-                  No tasks available for this project.
-                </div>
-              )}
-            </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {expandedProjectId === task.id && (!task.subTasks || task.subTasks.length === 0) && (
+                  <div style={{
+                    borderTop: '1px solid rgba(255, 255, 255, 0.4)',
+                    padding: '1.5rem',
+                    textAlign: 'center',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.9rem'
+                  }}>
+                    No tasks available for this project.
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
@@ -447,7 +458,7 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
       {renderProjectList('Upcoming Projects', upcomingProjects)}
       {renderProjectList('Completed Projects', completedProjects)}
       {renderProjectList('In-Active Projects', inactiveProjects)}
-      
+
       {(!tasks || tasks.length === 0) && (
         <p style={{ color: 'var(--text-muted)' }}>No projects available.</p>
       )}

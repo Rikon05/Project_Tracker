@@ -34,7 +34,10 @@ import pool from './db.js';
     const columnsToAdd = [
       'updated_by VARCHAR(255)',
       'commented_by VARCHAR(255)',
-      'attached_by VARCHAR(255)'
+      'attached_by VARCHAR(255)',
+      'updated_at DATETIME',
+      'commented_at DATETIME',
+      'attached_at DATETIME'
     ];
     for (const col of columnsToAdd) {
       try {
@@ -47,6 +50,35 @@ import pool from './db.js';
         }
       }
     }
+    
+    // Create comments table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS comments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        subtask_id INT NOT NULL,
+        text TEXT NOT NULL,
+        commented_by VARCHAR(255),
+        commented_at DATETIME,
+        FOREIGN KEY (subtask_id) REFERENCES subtasks(id) ON DELETE CASCADE
+      )
+    `);
+    
+    // Migrate existing remarks
+    try {
+      const [existing] = await pool.query('SELECT id, remark, commented_by, commented_at FROM subtasks WHERE remark IS NOT NULL AND remark != ""');
+      for (const row of existing) {
+        const [c] = await pool.query('SELECT id FROM comments WHERE subtask_id = ? AND text = ?', [row.id, row.remark]);
+        if (c.length === 0) {
+          await pool.query(
+            'INSERT INTO comments (subtask_id, text, commented_by, commented_at) VALUES (?, ?, ?, ?)',
+            [row.id, row.remark, row.commented_by, row.commented_at || new Date()]
+          );
+        }
+      }
+    } catch (err) {
+      console.error('Migration error (remarks to comments):', err);
+    }
+    
   } catch (err) {
     console.error('Migration failed:', err);
   }
@@ -70,8 +102,9 @@ app.get('/api/health', async (req, res) => {
 // GET all projects with their subtasks
 app.get('/api/projects', async (req, res) => {
   try {
-    const [projects] = await pool.query('SELECT * FROM projects ORDER BY created_at ASC');
+    const [projects] = await pool.query('SELECT * FROM projects ORDER BY created_at DESC');
     const [subtasks] = await pool.query('SELECT * FROM subtasks ORDER BY order_index ASC');
+    const [comments] = await pool.query('SELECT * FROM comments ORDER BY commented_at ASC');
     
     const projectList = projects.map(p => {
       return {
@@ -82,7 +115,10 @@ app.get('/api/projects', async (req, res) => {
         startDate: p.start_date,
         completed: Boolean(p.completed),
         activeStatus: p.active_status || 'Active',
-        subTasks: subtasks.filter(s => s.project_id === p.id)
+        subTasks: subtasks.filter(s => s.project_id === p.id).map(s => ({
+          ...s,
+          comments: comments.filter(c => c.subtask_id === s.id)
+        }))
       };
     });
     res.json(projectList);
@@ -199,7 +235,7 @@ app.put('/api/subtasks/:id/status', async (req, res) => {
   const { id } = req.params;
   const { status, updated_by } = req.body;
   try {
-    await pool.query('UPDATE subtasks SET status = ?, updated_by = ? WHERE id = ?', [status, updated_by, id]);
+    await pool.query('UPDATE subtasks SET status = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, updated_by, id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -212,8 +248,18 @@ app.put('/api/subtasks/:id/remark', async (req, res) => {
   const { id } = req.params;
   const { remark, commented_by } = req.body;
   try {
-    await pool.query('UPDATE subtasks SET remark = ?, commented_by = ? WHERE id = ?', [remark, commented_by, id]);
-    res.json({ success: true });
+    const [latest] = await pool.query('SELECT * FROM comments WHERE subtask_id = ? ORDER BY commented_at DESC LIMIT 1', [id]);
+    if (latest.length > 0 && latest[0].commented_by === commented_by) {
+      await pool.query('UPDATE comments SET text = ?, commented_at = CURRENT_TIMESTAMP WHERE id = ?', [remark, latest[0].id]);
+    } else {
+      await pool.query('INSERT INTO comments (subtask_id, text, commented_by, commented_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)', [id, remark, commented_by]);
+    }
+    
+    // For legacy compatibility, also update subtasks table
+    await pool.query('UPDATE subtasks SET remark = ?, commented_by = ?, commented_at = CURRENT_TIMESTAMP WHERE id = ?', [remark, commented_by, id]);
+    
+    const [comments] = await pool.query('SELECT * FROM comments WHERE subtask_id = ? ORDER BY commented_at ASC', [id]);
+    res.json({ success: true, comments });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update remark' });
@@ -231,7 +277,7 @@ app.post('/api/subtasks/:id/attachment', upload.single('attachment'), async (req
     const filename = req.file.filename;
     const originalname = req.file.originalname;
     
-    await pool.query('UPDATE subtasks SET attachment_filename = ?, attachment_original_name = ?, attached_by = ? WHERE id = ?', [filename, originalname, attached_by, id]);
+    await pool.query('UPDATE subtasks SET attachment_filename = ?, attachment_original_name = ?, attached_by = ?, attached_at = CURRENT_TIMESTAMP WHERE id = ?', [filename, originalname, attached_by, id]);
     res.json({ success: true, filename, originalname });
   } catch (err) {
     console.error(err);

@@ -545,7 +545,14 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onEditProj
                                 title="Add Remarks"
                                 onClick={() => {
                                   setRemarkingSubTaskId(sub.id);
-                                  setRemarkText(sub.remark || '');
+                                  const latestComment = sub.comments && sub.comments.length > 0 ? sub.comments[sub.comments.length - 1] : null;
+                                  if (latestComment && latestComment.commented_by === currentUser?.name) {
+                                    setRemarkText(latestComment.text);
+                                  } else if (!sub.comments && sub.remark && sub.commented_by === currentUser?.name) {
+                                    setRemarkText(sub.remark);
+                                  } else {
+                                    setRemarkText('');
+                                  }
                                 }}
                               >
                                 <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -587,19 +594,45 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onEditProj
                                 <option value="Completed">Completed</option>
                               </select>
                               {sub.updated_by && (
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Updated by: {sub.updated_by}</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                  {sub.updated_by} {sub.updated_at && `on ${new Date(sub.updated_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                                </span>
                               )}
                             </div>
                           </div>
                           </div>
-                          {(remarkingSubTaskId === sub.id || sub.remark) && (
+                          {(remarkingSubTaskId === sub.id || (sub.comments && sub.comments.length > 0) || sub.remark) && (
                             <div style={{ paddingRight: '1rem', paddingBottom: '0.25rem' }}>
-                              {remarkingSubTaskId === sub.id ? (
+                              
+                              {((sub.comments && sub.comments.length > 0) || sub.remark) && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: remarkingSubTaskId === sub.id ? '0.5rem' : '0' }}>
+                                  {(sub.comments && sub.comments.length > 0 ? sub.comments : (sub.remark ? [{text: sub.remark, commented_by: sub.commented_by, commented_at: sub.commented_at}] : [])).map((comment, idx) => (
+                                    <div key={idx} style={{ 
+                                      fontSize: '0.85rem', 
+                                      color: 'var(--text-muted)', 
+                                      backgroundColor: 'var(--bg-card)', 
+                                      padding: '0.5rem', 
+                                      borderRadius: '4px',
+                                      borderLeft: '3px solid var(--primary)',
+                                      boxShadow: 'var(--shadow-sm)'
+                                    }}>
+                                      <div style={{ whiteSpace: 'pre-wrap' }}>{comment.text}</div>
+                                      {comment.commented_by && (
+                                        <div style={{ fontSize: '0.7rem', marginTop: '0.25rem', opacity: 0.8, fontStyle: 'italic' }}>
+                                          {comment.commented_by} {comment.commented_at && `on ${new Date(comment.commented_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {remarkingSubTaskId === sub.id && (
                                 <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
                                   <textarea 
                                     value={remarkText}
                                     onChange={(e) => setRemarkText(e.target.value)}
-                                    placeholder="Add your remarks here..."
+                                    placeholder="Type your comment..."
                                     rows={2}
                                     style={{
                                       width: '100%',
@@ -627,32 +660,15 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onEditProj
                                       }}
                                       className="btn btn-primary"
                                       style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
-                                    >Save</button>
+                                    >Send</button>
                                   </div>
                                 </div>
-                                ) : (
-                                  <div style={{ 
-                                    fontSize: '0.85rem', 
-                                    color: 'var(--text-muted)', 
-                                    backgroundColor: 'var(--bg-card)', 
-                                    padding: '0.5rem', 
-                                    borderRadius: '4px',
-                                    borderLeft: '3px solid var(--primary)',
-                                    boxShadow: 'var(--shadow-sm)'
-                                  }}>
-                                    <div style={{ whiteSpace: 'pre-wrap' }}>{sub.remark}</div>
-                                    {sub.commented_by && (
-                                      <div style={{ fontSize: '0.7rem', marginTop: '0.25rem', opacity: 0.8, fontStyle: 'italic' }}>
-                                        Commented by: {sub.commented_by}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
+                              )}
                               
                               {sub.attachment_original_name && (
                                 <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                   <a 
-                                    href={`http://localhost:5000/uploads/${sub.attachment_filename}`} 
+                                    href={`http://${window.location.hostname}:5000/uploads/${sub.attachment_filename}`} 
                                     target="_blank" 
                                     rel="noreferrer"
                                     style={{
@@ -675,7 +691,7 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onEditProj
                                   </a>
                                   {sub.attached_by && (
                                     <div style={{ fontSize: '0.7rem', opacity: 0.8, fontStyle: 'italic', paddingLeft: '0.2rem' }}>
-                                      Attached by: {sub.attached_by}
+                                      {sub.attached_by} {sub.attached_at && `on ${new Date(sub.attached_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
                                     </div>
                                   )}
                                 </div>
