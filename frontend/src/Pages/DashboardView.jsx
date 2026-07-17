@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../services/api';
 import './DashboardView.css';
 
 function DashboardView({ tasks, totalTasks, completedTasks }) {
@@ -378,7 +379,7 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {sub.attachment_original_name && (
                                   <a
-                                    href={`http://${window.location.hostname}:5000/uploads/${sub.attachment_filename}`}
+                                    href={`${API_BASE_URL}/uploads/${sub.attachment_filename}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     title={sub.attached_by ? `View Attachment (${sub.attached_by}${sub.attached_at ? ` on ${new Date(sub.attached_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''})` : 'View Attachment'}

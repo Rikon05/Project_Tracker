@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../services/api';
 import './ProjectsView.css';
 
 function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onEditProject, onUpdateActiveStatus, onAddBulkTasks, onUpdateSubTaskStatus, onReorderSubTask, onEditSubTask, onUpdateSubTaskRemark, onUpdateSubTaskAttachment, currentUser }) {
@@ -668,7 +669,7 @@ function ProjectsView({ tasks, onAddTask, onToggleTask, onDeleteTask, onEditProj
                               {sub.attachment_original_name && (
                                 <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                   <a 
-                                    href={`http://${window.location.hostname}:5000/uploads/${sub.attachment_filename}`} 
+                                    href={`${API_BASE_URL}/uploads/${sub.attachment_filename}`} 
                                     target="_blank" 
                                     rel="noreferrer"
                                     style={{

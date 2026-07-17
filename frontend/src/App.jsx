@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from './services/api';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import DashboardView from './Pages/DashboardView';
@@ -44,7 +45,7 @@ function App() {
   // Fetch backend status and tasks
   const fetchTasks = async () => {
     try {
-      const response = await axios.get(`http://${window.location.hostname}:5000/api/projects`);
+      const response = await axios.get(`${API_BASE_URL}/api/projects`);
       setTasks(response.data);
     } catch (err) {
       console.error('Failed to fetch tasks', err);
@@ -54,7 +55,7 @@ function App() {
   useEffect(() => {
     const checkServer = async () => {
       try {
-        const response = await axios.get(`http://${window.location.hostname}:5000/api/health`, { timeout: 3000 });
+        const response = await axios.get(`${API_BASE_URL}/api/health`, { timeout: 3000 });
         if (response.data && response.data.status === 'ok') {
           setServerStatus('online');
         } else {
@@ -75,7 +76,7 @@ function App() {
   // Handlers for Tasks
   const handleAddTask = async (taskData) => {
     try {
-      const response = await axios.post(`http://${window.location.hostname}:5000/api/projects`, taskData);
+      const response = await axios.post(`${API_BASE_URL}/api/projects`, taskData);
       setTasks((prev) => [...prev, response.data]);
     } catch (err) {
       console.error('Failed to add project', err);
@@ -87,7 +88,7 @@ function App() {
     if (!task) return;
     
     try {
-      await axios.put(`http://${window.location.hostname}:5000/api/projects/${id}/toggle`, { completed: !task.completed });
+      await axios.put(`${API_BASE_URL}/api/projects/${id}/toggle`, { completed: !task.completed });
       setTasks((prev) =>
         prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
       );
@@ -98,7 +99,7 @@ function App() {
 
   const handleDeleteTask = async (id) => {
     try {
-      await axios.delete(`http://${window.location.hostname}:5000/api/projects/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/projects/${id}`);
       setTasks((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       console.error('Failed to delete project', err);
@@ -107,7 +108,7 @@ function App() {
 
   const handleEditProject = async (id, updatedData) => {
     try {
-      await axios.put(`http://${window.location.hostname}:5000/api/projects/${id}`, updatedData);
+      await axios.put(`${API_BASE_URL}/api/projects/${id}`, updatedData);
       setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updatedData } : t)));
     } catch (err) {
       console.error('Failed to edit project', err);
@@ -119,7 +120,7 @@ function App() {
       const formData = new FormData();
       formData.append('attachment', file);
       if (currentUser?.name) formData.append('attached_by', currentUser.name);
-      const res = await axios.post(`http://${window.location.hostname}:5000/api/subtasks/${subTaskId}/attachment`, formData, {
+      const res = await axios.post(`${API_BASE_URL}/api/subtasks/${subTaskId}/attachment`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setTasks((prev) => prev.map((t) => {
@@ -138,7 +139,7 @@ function App() {
 
   const handleUpdateActiveStatus = async (id, newActiveStatus) => {
     try {
-      await axios.put(`http://${window.location.hostname}:5000/api/projects/${id}/active`, { activeStatus: newActiveStatus });
+      await axios.put(`${API_BASE_URL}/api/projects/${id}/active`, { activeStatus: newActiveStatus });
       setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, activeStatus: newActiveStatus } : t)));
     } catch (err) {
       console.error('Failed to update active status', err);
@@ -147,7 +148,7 @@ function App() {
 
   const handleAddBulkTasks = async (projectId, newTasksArray) => {
     try {
-      const response = await axios.post(`http://${window.location.hostname}:5000/api/projects/${projectId}/subtasks/bulk`, { subTasks: newTasksArray });
+      const response = await axios.post(`${API_BASE_URL}/api/projects/${projectId}/subtasks/bulk`, { subTasks: newTasksArray });
       setTasks((prev) => prev.map((t) => {
         if (t.id === projectId) {
           return { ...t, subTasks: response.data };
@@ -162,7 +163,7 @@ function App() {
   const handleUpdateSubTaskStatus = async (projectId, subTaskId, newStatus) => {
     try {
       const updatedBy = currentUser?.name || '';
-      await axios.put(`http://${window.location.hostname}:5000/api/subtasks/${subTaskId}/status`, { status: newStatus, updated_by: updatedBy });
+      await axios.put(`${API_BASE_URL}/api/subtasks/${subTaskId}/status`, { status: newStatus, updated_by: updatedBy });
       setTasks((prev) => prev.map((t) => {
         if (t.id === projectId && t.subTasks) {
           const updatedSubTasks = t.subTasks.map(sub => 
@@ -197,7 +198,7 @@ function App() {
       newTasks[projectIndex].subTasks = subTasks;
       
       // Fire and forget to backend
-      axios.put(`http://${window.location.hostname}:5000/api/projects/${projectId}/subtasks/reorder`, { subTasks }).catch(err => {
+      axios.put(`${API_BASE_URL}/api/projects/${projectId}/subtasks/reorder`, { subTasks }).catch(err => {
          console.error('Failed to reorder subtasks', err);
       });
       
@@ -207,7 +208,7 @@ function App() {
 
   const handleEditSubTask = async (projectId, subTaskId, newTitle) => {
     try {
-      await axios.put(`http://${window.location.hostname}:5000/api/subtasks/${subTaskId}`, { title: newTitle });
+      await axios.put(`${API_BASE_URL}/api/subtasks/${subTaskId}`, { title: newTitle });
       setTasks((prev) => prev.map((t) => {
         if (t.id === projectId && t.subTasks) {
           const updatedSubTasks = t.subTasks.map(sub => 
@@ -225,7 +226,7 @@ function App() {
   const handleUpdateSubTaskRemark = async (projectId, subTaskId, remark) => {
     try {
       const commentedBy = currentUser?.name || '';
-      const res = await axios.put(`http://${window.location.hostname}:5000/api/subtasks/${subTaskId}/remark`, { remark: remark, commented_by: commentedBy });
+      const res = await axios.put(`${API_BASE_URL}/api/subtasks/${subTaskId}/remark`, { remark: remark, commented_by: commentedBy });
       setTasks((prev) => prev.map((t) => {
         if (t.id === projectId && t.subTasks) {
           const updatedSubTasks = t.subTasks.map(sub => 
@@ -252,7 +253,7 @@ function App() {
 
   const handleLoginSubmit = async (username, password) => {
     try {
-      const res = await axios.post(`http://${window.location.hostname}:5000/api/login`, { username, password });
+      const res = await axios.post(`${API_BASE_URL}/api/login`, { username, password });
       if (res.data.success) {
         setIsLoggedIn(true);
         setCurrentUser(res.data.user);

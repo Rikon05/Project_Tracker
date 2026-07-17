@@ -12,7 +12,7 @@ function Footer({ serverStatus }) {
 
       <div className="status-container">
         {isOnline ? (
-          <div className="status-badge online" title="Express server is running on port 5000">
+          <div className="status-badge online" title="Express server is running on port 5001">
             <span className="status-dot"></span>
             <span>Server Online</span>
           </div>

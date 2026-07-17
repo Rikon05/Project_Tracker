@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../services/api';
 import './AdminView.css';
 
 const PERMISSION_MODULES = [
@@ -32,7 +33,7 @@ function AdminView() {
 
   const fetchRoles = async () => {
     try {
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/roles`);
+      const res = await axios.get(`${API_BASE_URL}/api/roles`);
       setRoles(res.data);
     } catch (err) {
       console.error('Failed to fetch roles', err);
@@ -41,7 +42,7 @@ function AdminView() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/users`);
+      const res = await axios.get(`${API_BASE_URL}/api/users`);
       setUsers(res.data);
     } catch (err) {
       console.error('Failed to fetch users', err);
@@ -68,7 +69,7 @@ function AdminView() {
     
     if (editingRoleId) {
       try {
-        const res = await axios.put(`http://${window.location.hostname}:5000/api/roles/${editingRoleId}`, newRole);
+        const res = await axios.put(`${API_BASE_URL}/api/roles/${editingRoleId}`, newRole);
         setRoles(roles.map(r => r.id === editingRoleId ? res.data : r));
         setNewRole({ name: '', description: '', permissions: {} });
         setEditingRoleId(null);
@@ -77,7 +78,7 @@ function AdminView() {
       }
     } else {
       try {
-        const res = await axios.post(`http://${window.location.hostname}:5000/api/roles`, newRole);
+        const res = await axios.post(`${API_BASE_URL}/api/roles`, newRole);
         setRoles([...roles, res.data]);
         setNewRole({ name: '', description: '', permissions: {} });
       } catch (err) {
@@ -89,7 +90,7 @@ function AdminView() {
   const handleDeleteRole = async (id) => {
     if (window.confirm("Are you sure you want to delete this role?")) {
       try {
-        await axios.delete(`http://${window.location.hostname}:5000/api/roles/${id}`);
+        await axios.delete(`${API_BASE_URL}/api/roles/${id}`);
         setRoles(roles.filter(r => r.id !== id));
       } catch (err) {
         console.error('Failed to delete role', err);
@@ -103,7 +104,7 @@ function AdminView() {
     
     if (editingUserId) {
       try {
-        const res = await axios.put(`http://${window.location.hostname}:5000/api/users/${editingUserId}`, newUser);
+        const res = await axios.put(`${API_BASE_URL}/api/users/${editingUserId}`, newUser);
         setUsers(users.map(u => u.id === editingUserId ? res.data : u));
         setNewUser({ name: '', username: '', password: '', role: '', status: 'Active' });
         setEditingUserId(null);
@@ -113,7 +114,7 @@ function AdminView() {
     } else {
       if (!newUser.password) return; // password required for new users
       try {
-        const res = await axios.post(`http://${window.location.hostname}:5000/api/users`, newUser);
+        const res = await axios.post(`${API_BASE_URL}/api/users`, newUser);
         setUsers([...users, res.data]);
         setNewUser({ name: '', username: '', password: '', role: '', status: 'Active' });
       } catch (err) {
@@ -125,7 +126,7 @@ function AdminView() {
   const handleToggleUserStatus = async (user) => {
     const newStatus = user.status === 'Active' ? 'In-Active' : 'Active';
     try {
-      const res = await axios.put(`http://${window.location.hostname}:5000/api/users/${user.id}`, { ...user, status: newStatus });
+      const res = await axios.put(`${API_BASE_URL}/api/users/${user.id}`, { ...user, status: newStatus });
       setUsers(users.map(u => u.id === user.id ? res.data : u));
     } catch (err) {
       alert('Failed to update user status');
