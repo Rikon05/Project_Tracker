@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './LoginView.css';
 
-function LoginView({ onLoginSubmit }) {
+function LoginView({ onLoginSubmit, message }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -15,6 +15,8 @@ function LoginView({ onLoginSubmit }) {
 
   return (
     <div className="login-view-container">
+      {message && <div className="login-message-banner">{message}</div>}
+
       <div className="login-radial-wrapper">
         <img src="/kims-logo.png" alt="KIMS Logo Watermark" className="login-watermark" />
 

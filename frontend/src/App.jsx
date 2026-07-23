@@ -9,28 +9,29 @@ import AdminView from './Pages/AdminView';
 import LoginView from './Pages/LoginView';
 
 function App() {
-  const [currentTab, setCurrentTab] = useState(() => localStorage.getItem('currentTab') || 'login');
-  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('isLoggedIn') === 'true');
+  const [currentTab, setCurrentTab] = useState(() => sessionStorage.getItem('currentTab') || 'login');
+  const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem('isLoggedIn') === 'true');
   const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('currentUser');
+    const saved = sessionStorage.getItem('currentUser');
     return saved ? JSON.parse(saved) : null;
   });
   const [serverStatus, setServerStatus] = useState('checking');
+  const [loginMessage, setLoginMessage] = useState('');
 
-  // Persist state to localStorage
+  // Persist state to sessionStorage
   useEffect(() => {
-    localStorage.setItem('currentTab', currentTab);
+    sessionStorage.setItem('currentTab', currentTab);
   }, [currentTab]);
 
   useEffect(() => {
-    localStorage.setItem('isLoggedIn', isLoggedIn);
+    sessionStorage.setItem('isLoggedIn', isLoggedIn);
   }, [isLoggedIn]);
 
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
     } else {
-      localStorage.removeItem('currentUser');
+      sessionStorage.removeItem('currentUser');
     }
   }, [currentUser]);
 
@@ -38,6 +39,102 @@ function App() {
   useEffect(() => {
     window.history.pushState(null, '', `/${currentTab}`);
   }, [currentTab]);
+
+  // Redirect to login if not logged in
+  useEffect(() => {
+    if (!isLoggedIn && currentTab !== 'login') {
+      setCurrentTab('login');
+    }
+  }, [isLoggedIn, currentTab]);
+
+  const handleLogout = (message = '') => {
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setCurrentTab('login');
+    setLoginMessage(message);
+  };
+
+  // Handle tab/browser close detection (allow refreshes but expire on close)
+  useEffect(() => {
+    const lastUnload = localStorage.getItem('lastUnloadTime');
+    if (lastUnload) {
+      const timeSinceUnload = Date.now() - parseInt(lastUnload, 10);
+      // If more than 8 seconds, expire session
+      if (timeSinceUnload > 8000) {
+        handleLogout();
+      }
+    }
+
+    const handleBeforeUnload = () => {
+      localStorage.setItem('lastUnloadTime', Date.now().toString());
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  // Inactivity timeout (15 mins)
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 mins
+
+    const resetTimer = () => {
+      sessionStorage.setItem('lastActivity', Date.now().toString());
+    };
+
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    const addListeners = () => events.forEach(event => window.addEventListener(event, resetTimer));
+    const removeListeners = () => events.forEach(event => window.removeEventListener(event, resetTimer));
+
+    addListeners();
+    resetTimer();
+
+    const interval = setInterval(() => {
+      const lastActivity = sessionStorage.getItem('lastActivity');
+      if (lastActivity) {
+        const timePassed = Date.now() - parseInt(lastActivity, 10);
+        if (timePassed >= INACTIVITY_LIMIT) {
+          handleLogout('Session expired due to 15 minutes of inactivity.');
+        }
+      }
+    }, 10000); // Check every 10 seconds
+
+    return () => {
+      removeListeners();
+      clearInterval(interval);
+    };
+  }, [isLoggedIn]);
+
+  // Connection loss / restore handler
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    // Track offline status since mount
+    let isCurrentlyOffline = !navigator.onLine;
+
+    const handleOffline = () => {
+      isCurrentlyOffline = true;
+      handleLogout('Session expired due to internet connection changes.');
+    };
+
+    const handleOnline = () => {
+      if (isCurrentlyOffline) {
+        handleLogout('Session expired due to internet connection changes.');
+      }
+      isCurrentlyOffline = false;
+    };
+
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [isLoggedIn]);
   
   // Task State (Dynamically fetched from backend)
   const [tasks, setTasks] = useState([]);
@@ -243,9 +340,7 @@ function App() {
 
   const handleLoginClick = () => {
     if (isLoggedIn) {
-      setIsLoggedIn(false);
-      setCurrentUser(null);
-      setCurrentTab('login');
+      handleLogout();
     } else {
       setCurrentTab('login');
     }
@@ -255,6 +350,7 @@ function App() {
     try {
       const res = await axios.post(`${API_BASE_URL}/api/login`, { username, password });
       if (res.data.success) {
+        setLoginMessage('');
         setIsLoggedIn(true);
         setCurrentUser(res.data.user);
         setCurrentTab('dashboard');
@@ -278,7 +374,7 @@ function App() {
       )}
 
       {/* Main Content Area (Body) */}
-      <main className="app-body">
+      <main className="app-body" style={currentTab === 'login' ? { animation: 'none' } : {}}>
         {currentTab === 'dashboard' && (
           <DashboardView
             tasks={tasks}
@@ -308,7 +404,7 @@ function App() {
           <AdminView serverStatus={serverStatus} currentUser={currentUser} />
         )}
         {currentTab === 'login' && (
-          <LoginView onLoginSubmit={handleLoginSubmit} />
+          <LoginView onLoginSubmit={handleLoginSubmit} message={loginMessage} />
         )}
       </main>
 
