@@ -184,3 +184,81 @@
   50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6)); }
   100% { opacity: 0.85; }
 }
+
+/* Highlighted Icon Badges for Subtasks in Dashboard */
+.subtask-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.subtask-icon-badge.attachment-highlight {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 0 6px rgba(37, 99, 235, 0.25);
+}
+
+.subtask-icon-badge.attachment-highlight:hover {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  transform: scale(1.12);
+}
+
+.subtask-icon-badge.message-highlight {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+  box-shadow: 0 0 6px rgba(124, 58, 237, 0.25);
+}
+
+.subtask-icon-badge.message-highlight:hover {
+  background-color: #ede9fe;
+  color: #6d28d9;
+  transform: scale(1.12);
+}
+
+.subtask-icon-badge.message-active {
+  background-color: #7c3aed;
+  color: #ffffff;
+  border: 1px solid #6d28d9;
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+}
+
+.header-summary-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 4px;
+}
+
+/* Disable full-page hover movement/transform effects when dropdown is open */
+.dashboard-container.dropdown-is-open .dashboard-project-card:hover {
+  transform: none !important;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+  border-color: rgba(255, 255, 255, 0.8) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 100%) !important;
+}
+
+.dashboard-container.dropdown-is-open .dashboard-project-card:hover .animated-progress-wrapper {
+  transform: none !important;
+}
+
+.dashboard-container.dropdown-is-open .stat-card:hover {
+  transform: none !important;
+  box-shadow: var(--shadow-sm) !important;
+  border-color: var(--border) !important;
+}
+

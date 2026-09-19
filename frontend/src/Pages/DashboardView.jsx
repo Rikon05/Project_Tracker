@@ -458,34 +458,27 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
                             padding: '1rem 0',
                             borderBottom: isLast ? 'none' : '1px solid rgba(0,0,0,0.05)'
                           }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '1rem' }}>
-                                <span style={{
-                                  fontSize: '0.95rem',
-                                  fontWeight: '500',
-                                  color: isCompleted ? 'var(--text-muted)' : 'var(--text-heading)',
-                                  textDecoration: 'none'
-                                }}>
-                                  {sub.title}
-                                </span>
-                                {sub.updated_by && (
-                                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic', marginLeft: 'auto', paddingRight: '1rem' }}>
-                                    {sub.updated_by} {sub.updated_at && `on ${new Date(sub.updated_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
-                                  </span>
-                                )}
-                              </div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+                              <span style={{
+                                fontSize: '0.95rem',
+                                fontWeight: '500',
+                                color: isCompleted ? 'var(--text-muted)' : 'var(--text-heading)',
+                                textDecoration: 'none'
+                              }}>
+                                {sub.title}
+                              </span>
 
-                              {/* Icons for Attachment and Remark */}
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+                                {/* Icons for Attachment and Remark (placed to the left of user name) */}
                                 {sub.attachment_original_name && (
                                   <a
                                     href={`${API_BASE_URL}/uploads/${sub.attachment_filename}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     title={sub.attached_by ? `View Attachment (${sub.attached_by}${sub.attached_at ? ` on ${new Date(sub.attached_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''})` : 'View Attachment'}
-                                    style={{ color: '#94a3b8', display: 'flex', cursor: 'pointer', textDecoration: 'none' }}
+                                    className="subtask-icon-badge attachment-highlight"
                                   >
-                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                     </svg>
                                   </a>
@@ -493,15 +486,21 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
                                 {((sub.comments && sub.comments.length > 0) || sub.remark) && (
                                   <span
                                     title="Toggle Comments"
-                                    style={{ color: visibleRemarkSubtaskId === sub.id ? 'var(--primary)' : '#94a3b8', display: 'flex', cursor: 'pointer' }}
+                                    className={`subtask-icon-badge ${visibleRemarkSubtaskId === sub.id ? 'message-active' : 'message-highlight'}`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setVisibleRemarkSubtaskId(prev => prev === sub.id ? null : sub.id);
                                     }}
                                   >
-                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                     </svg>
+                                  </span>
+                                )}
+
+                                {sub.updated_by && (
+                                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic', marginLeft: '4px' }}>
+                                    {sub.updated_by} {sub.updated_at && `on ${new Date(sub.updated_at).toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
                                   </span>
                                 )}
                               </div>
@@ -554,7 +553,7 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
   };
 
   return (
-    <div className="dashboard-container">
+    <div className={`dashboard-container ${expandedProjectId ? 'dropdown-is-open' : ''}`}>
       {renderProjectList('Active Projects', activeProjects)}
       {renderProjectList('Upcoming Projects', upcomingProjects)}
       {renderProjectList('Completed Projects', completedProjects)}
