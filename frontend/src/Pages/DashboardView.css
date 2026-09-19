@@ -134,10 +134,26 @@
 }
 
 .dashboard-project-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 30px minmax(180px, 1fr) 160px 110px 125px 44px 115px 36px;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.2rem 1.5rem;
+  gap: 1rem;
+  padding: 0.6rem 1.25rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-project-header {
+    grid-template-columns: 30px minmax(140px, 1fr) 140px 95px 110px 40px 105px 32px;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-project-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
 }
 
 @keyframes pulse-blink {
@@ -148,4 +164,23 @@
 
 .status-dot-blink {
   animation: pulse-blink 1.5s infinite ease-in-out;
+}
+
+/* Animated Progress Ring Hover & Glow Effects */
+.animated-progress-wrapper {
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dashboard-project-card:hover .animated-progress-wrapper {
+  transform: scale(1.18);
+}
+
+.animated-progress-wrapper circle:nth-child(2) {
+  animation: ringGlowPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes ringGlowPulse {
+  0% { opacity: 0.85; }
+  50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6)); }
+  100% { opacity: 0.85; }
 }

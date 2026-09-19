@@ -1,6 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../services/api';
 import './DashboardView.css';
+
+function AnimatedProgressRing({ percentage, color }) {
+  const [displayedPercent, setDisplayedPercent] = useState(0);
+  const radius = 16;
+  const circumference = 2 * Math.PI * radius;
+
+  useEffect(() => {
+    let startTimestamp = null;
+    const duration = 1000;
+    const startValue = 0;
+    const endValue = percentage;
+    let animationFrameId;
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(startValue + (endValue - startValue) * easeProgress);
+      setDisplayedPercent(current);
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(step);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [percentage]);
+
+  const strokeDashoffset = circumference - (displayedPercent / 100) * circumference;
+
+  return (
+    <div className="animated-progress-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+        <svg width="40" height="40" style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}>
+          <circle
+            cx="20"
+            cy="20"
+            r={radius}
+            fill="none"
+            stroke="#e2e8f0"
+            strokeWidth="4"
+          />
+          <circle
+            cx="20"
+            cy="20"
+            r={radius}
+            fill="none"
+            stroke={color}
+            strokeWidth="4"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            style={{
+              transition: 'stroke-dashoffset 0.1s linear, stroke 0.3s ease',
+              filter: `drop-shadow(0 0 4px ${color}80)`
+            }}
+          />
+        </svg>
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '0.65rem',
+          fontWeight: '700',
+          color: 'var(--text-heading)'
+        }}>
+          {displayedPercent}%
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function DashboardView({ tasks, totalTasks, completedTasks }) {
   const [expandedProjectId, setExpandedProjectId] = useState(null);
@@ -188,117 +263,142 @@ function DashboardView({ tasks, totalTasks, completedTasks }) {
             return (
               <div key={task.id} className="dashboard-project-card" style={{ borderLeft: `5px solid ${color}`, opacity: task.activeStatus === 'In-Active' ? 0.55 : 1 }}>
                 <div className="dashboard-project-header">
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-
-                    {/* Category Circle Icon */}
-                    <div style={{
-                      width: '30px', height: '30px',
-                      borderRadius: '50%',
-                      backgroundColor: bg,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: color,
-                      flexShrink: 0
-                    }}>
-                      {rowIcon}
-                    </div>
-
-                    <h3 style={{ margin: '0', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-heading)', minWidth: '180px' }}>
-                      {task.title}
-                    </h3>
-
-                    {/* Resource Badges */}
-                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#475569' }}>
-                      <span style={{ width: '130px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#475569"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
-                        {task.owner}
-                      </span>
-                      <span style={{ width: '100px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b"><path d="M13 2.05v8.45h4.5l-8.5 11.45v-8.45h-4.5l8.5-11.45z" /></svg>
-                        {task.medium}
-                      </span>
-                      <span style={{ width: '120px', padding: '0.35rem 0.75rem', backgroundColor: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600', boxSizing: 'border-box' }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z" /></svg>
-                        {task.startDate ? task.startDate.split('T')[0] : ''}
-                      </span>
-                    </div>
+                  {/* Category Circle Icon */}
+                  <div style={{
+                    width: '30px', height: '30px',
+                    borderRadius: '50%',
+                    backgroundColor: bg,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: color,
+                    flexShrink: 0
+                  }}>
+                    {rowIcon}
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                    {/* Round Icon for Percentage */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div style={{ position: 'relative', width: '40px', height: '40px' }}>
-                        <svg width="40" height="40" style={{ transform: 'rotate(-90deg)' }}>
-                          <circle
-                            cx="20"
-                            cy="20"
-                            r={radius}
-                            fill="none"
-                            stroke="#e2e8f0"
-                            strokeWidth="4"
-                          />
-                          <circle
-                            cx="20"
-                            cy="20"
-                            r={radius}
-                            fill="none"
-                            stroke={color}
-                            strokeWidth="4"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={strokeDashoffset}
-                            strokeLinecap="round"
-                            style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                          />
-                        </svg>
-                        <div style={{
-                          position: 'absolute',
-                          top: 0, left: 0, right: 0, bottom: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.65rem',
-                          fontWeight: '700',
-                          color: 'var(--text-heading)'
-                        }}>
-                          {percentage}%
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Status Badge */}
-                    <div style={{
-                      padding: '0.35rem 1rem',
-                      borderRadius: '20px',
-                      fontSize: '0.75rem',
-                      fontWeight: '700',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      backgroundColor: statusBg,
-                      color: statusColor,
-                      minWidth: '110px',
+                  <h3 
+                    title={task.title}
+                    style={{ 
+                      margin: '0', 
+                      fontSize: '0.85rem', 
+                      fontWeight: '700', 
+                      color: 'var(--text-heading)', 
                       whiteSpace: 'nowrap',
-                      justifyContent: 'flex-start'
-                    }}>
-                      <div className={projectStatus === 'In-Progress' ? 'status-dot-blink' : ''} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: statusDot, flexShrink: 0 }}></div>
-                      {projectStatus}
-                    </div>
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    {task.title}
+                  </h3>
 
-                    {/* Expand Chevron */}
-                    <button
-                      onClick={() => setExpandedProjectId(prev => prev === task.id ? null : task.id)}
-                      style={{
-                        background: 'none', border: 'none', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        padding: '0.5rem', color: 'var(--text-muted)',
-                        transform: expandedProjectId === task.id ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s ease'
-                      }}
-                    >
-                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                      </svg>
-                    </button>
+                  {/* Resource Badges */}
+                  <span 
+                    title={`Owner: ${task.owner || 'Unassigned'}`}
+                    style={{ 
+                      padding: '0.35rem 0.75rem', 
+                      backgroundColor: '#f8fafc', 
+                      borderRadius: '20px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      fontWeight: '600', 
+                      boxSizing: 'border-box',
+                      fontSize: '0.75rem',
+                      color: '#475569',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#475569" style={{ flexShrink: 0 }}><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {task.owner || 'Unassigned'}
+                    </span>
+                  </span>
+
+                  <span 
+                    title={`Medium: ${task.medium || 'General'}`}
+                    style={{ 
+                      padding: '0.35rem 0.75rem', 
+                      backgroundColor: '#f8fafc', 
+                      borderRadius: '20px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      fontWeight: '600', 
+                      boxSizing: 'border-box',
+                      fontSize: '0.75rem',
+                      color: '#475569',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" style={{ flexShrink: 0 }}><path d="M13 2.05v8.45h4.5l-8.5 11.45v-8.45h-4.5l8.5-11.45z" /></svg>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {task.medium || 'General'}
+                    </span>
+                  </span>
+
+                  <span 
+                    title={`Start Date: ${task.startDate ? task.startDate.split('T')[0] : 'N/A'}`}
+                    style={{ 
+                      padding: '0.35rem 0.75rem', 
+                      backgroundColor: '#f8fafc', 
+                      borderRadius: '20px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      fontWeight: '600', 
+                      boxSizing: 'border-box',
+                      fontSize: '0.75rem',
+                      color: '#475569',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444" style={{ flexShrink: 0 }}><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z" /></svg>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {task.startDate ? task.startDate.split('T')[0] : 'N/A'}
+                    </span>
+                  </span>
+
+                  {/* Round Icon for Percentage */}
+                  <AnimatedProgressRing percentage={percentage} color={color} />
+
+                  {/* Status Badge */}
+                  <div style={{
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '20px',
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: statusBg,
+                    color: statusColor,
+                    whiteSpace: 'nowrap',
+                    justifyContent: 'flex-start'
+                  }}>
+                    <div className={projectStatus === 'In-Progress' ? 'status-dot-blink' : ''} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: statusDot, flexShrink: 0 }}></div>
+                    <span>{projectStatus}</span>
                   </div>
+
+                  {/* Expand Chevron */}
+                  <button
+                    onClick={() => setExpandedProjectId(prev => prev === task.id ? null : task.id)}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: '0.5rem', color: 'var(--text-muted)',
+                      transform: expandedProjectId === task.id ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease'
+                    }}
+                  >
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </button>
                 </div>
 
                 {/* Subtasks List */}
